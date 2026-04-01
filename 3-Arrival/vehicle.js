@@ -182,7 +182,11 @@ class Vehicle {
   }
 
   flee(target) {
-    // recopier code de flee de l'exemple précédent
+    let desiredSpeed = p5.Vector.sub(this.pos, target); // opposé de seek
+    desiredSpeed.setMag(this.maxSpeed);
+    let force = p5.Vector.sub(desiredSpeed, this.vel);
+    force.limit(this.maxForce);
+    return force;
   }
 
   seek(target, arrival = false, d=0) {
@@ -245,40 +249,33 @@ class Vehicle {
 
   show() {
     
-    stroke(255);
-    strokeWeight(2);
-    fill(255);
-    stroke(0);
-    strokeWeight(2);
+    fill(100, 200, 255);
+    stroke(200, 255, 255);
+    strokeWeight(1);
     push();
-    translate(this.pos.x, this.pos.y);
-    if(this.vel.mag() > 0.2)
-      rotate(this.vel.heading());
-
-    triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+    translate(this.pos.x, this.pos.y, 0);
+    
+    // Faire pointer le cône dans la direction du vecteur vitesse
+    if(this.vel.mag() > 0.2) {
+      rotateZ(this.vel.heading());
+    }
+    
+    // Draw as a 3D cone instead of 2D triangle
+    cone(this.r, this.r * 2);
+    
     pop();
-    /*
-   push();
-   // on dessine le vehicule comme un cercle
-   fill("blue");
-   stroke("white");
-   strokeWeight(2);
-   translate(this.pos.x, this.pos.y);
-   circle(0, 0, this.r * 2);  
-   pop();
-   */
   }
 
   edges() {
-    if (this.pos.x > width + this.r) {
-      this.pos.x = -this.r;
-    } else if (this.pos.x < -this.r) {
-      this.pos.x = width + this.r;
+    if (this.pos.x > width / 2 + this.r) {
+      this.pos.x = -width / 2 - this.r;
+    } else if (this.pos.x < -width / 2 - this.r) {
+      this.pos.x = width / 2 + this.r;
     }
-    if (this.pos.y > height + this.r) {
-      this.pos.y = -this.r;
-    } else if (this.pos.y < -this.r) {
-      this.pos.y = height + this.r;
+    if (this.pos.y > height / 2 + this.r) {
+      this.pos.y = -height / 2 - this.r;
+    } else if (this.pos.y < -height / 2 - this.r) {
+      this.pos.y = height / 2 + this.r;
     }
   }
 }
@@ -291,12 +288,12 @@ class Target extends Vehicle {
   }
 
   show() {
-    stroke(255);
-    strokeWeight(2);
-    fill("#F063A4");
+    fill(255, 100, 100);
+    stroke(255, 200, 200);
+    strokeWeight(1);
     push();
-    translate(this.pos.x, this.pos.y);
-    circle(0, 0, this.r * 2);
+    translate(this.pos.x, this.pos.y, 0);
+    sphere(this.r);
     pop();
   }
 }

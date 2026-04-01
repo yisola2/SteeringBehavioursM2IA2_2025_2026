@@ -10,71 +10,34 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  const nbVehicles = 20;
+  const nbVehicles = 1;
   for (let i = 0; i < nbVehicles; i++) {
     let vehicle = new Vehicle(100, 100, imageFusee);
     vehicles.push(vehicle);
   }
 
-  // On cree des sliders pour régler les paramètres
-  creerSlidersPourProprietesVehicules();
+  // On crée les sliders via SliderPanel
+  const panel = new SliderPanel(10, 10);
 
-  //TODO : creerSliderPourNombreDeVehicules(nbVehicles);
-  //creerSliderPourNombreDeVehicules(nbVehicles);
+  panel.add('Vitesse Max',      { min: 1,    max: 20,  value: 10,  step: 1,
+    onChange: v => vehicles.forEach(ve => ve.maxSpeed = v) });
 
-  //TODO : 
-  //creerSliderPourLongueurCheminDerriereVehicules(20);
-}
+  panel.add('Force Max',        { min: 0.05, max: 2,   value: 0.1, step: 0.05,
+    onChange: v => vehicles.forEach(ve => ve.maxForce = v) });
 
-function creerSlidersPourProprietesVehicules() {
-  // Slider pour régler la vitesse max
-  creerSliderPourProprieteVehicules(
-    'Vitesse Max:', 'maxSpeed', 1, 20, 10, 1, 10, 10);
+  panel.add('Rayon Wander',     { min: 5,    max: 100, value: 50,  step: 5,
+    onChange: v => vehicles.forEach(ve => ve.wanderRadius = v) });
 
-  // Slider pour régler la force max
-  creerSliderPourProprieteVehicules(
-    'Force Max:', 'maxForce', 0.05, 2, 0.1, 0.05, 10, 40);
-
-  // Slider pour régler la taille du cercle de wander
-  creerSliderPourProprieteVehicules(
-    'Rayon Wander:', 'wanderRadius', 5, 100, 50, 5, 10, 70);
-
-  // Slider pour régler la distance du cercle de wander
-  creerSliderPourProprieteVehicules(
-    'Distance Wander:', 'distanceCercle', 10, 300, 150, 10, 10, 100);
+  panel.add('Distance Wander',  { min: 10,   max: 300, value: 150, step: 10,
+    onChange: v => vehicles.forEach(ve => ve.distanceCercle = v) });
 
   // Checkbox pour activer/désactiver le mode debug
   debugCheckbox = createCheckbox('Mode Debug (touche d)', false);
-  debugCheckbox.position(10, 130);
+  debugCheckbox.position(10, 10 + 4 * 40);
   debugCheckbox.style('color', 'white');
-  debugCheckbox.style('font-size', '20px');
+  debugCheckbox.style('font-size', '18px');
   debugCheckbox.changed(() => {
     Vehicle.debug = debugCheckbox.checked();
-  }); 
-}
-
-function creerSliderPourProprieteVehicules(labelText, propertyName,
-  min, max, initialValue, step, posX, posY) {
-  let slider = createSlider(min, max, initialValue, step);
-  slider.position(posX + 150, posY);
-  slider.size(180);
-
-  let label = createDiv(labelText);
-  label.position(posX, posY - 3);
-  label.style('color', 'white');
-  label.style('font-size', '20px');
-
-  let valueDisplay = createDiv(slider.value());
-  valueDisplay.position(posX + 350, posY - 3);
-  valueDisplay.style('color', 'white');
-  valueDisplay.style('font-size', '20px');
-
-  slider.input(() => {
-    valueDisplay.html(slider.value());
-    // on met à jour la propriété pour tous les véhicules
-    vehicles.forEach(vehicle => {
-      vehicle[propertyName] = slider.value();
-    });
   });
 }
 
@@ -85,7 +48,8 @@ function draw() {
   //background(0, 0, 0, 20);
 
   vehicles.forEach(vehicle => {
-    vehicle.wander();
+    let force = vehicle.wander();
+    vehicle.applyForce(force);
 
     vehicle.update();
     vehicle.show();

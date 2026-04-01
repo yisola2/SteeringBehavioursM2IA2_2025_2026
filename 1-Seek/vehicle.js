@@ -16,7 +16,13 @@ class Vehicle {
 
   
   applyBehaviors(target) {
-    let force = this.seek(target);
+    let force;
+    // si le véhicule est dans le rayon de détection de la cible, il fuit
+    if (this.pos.dist(target) < 200) {
+      force = this.flee(target);
+    } else {
+      force = this.seek(target);
+    }
     this.applyForce(force);
   }
 
@@ -46,8 +52,16 @@ class Vehicle {
 
   // comportement de fuite, inverse de seek
   flee(target) {
-    // inverse de seek !
-    return this.seek(target).mult(-1);
+    // Version naïve : inverse la force → incorrect selon Reynolds
+    // return this.seek(target).mult(-1);
+
+    // Version correcte (Reynolds) : on inverse la VITESSE DÉSIRÉE
+    // au lieu d'aller VERS la cible, on va À L'OPPOSÉ
+    let desiredSpeed = p5.Vector.sub(this.pos, target); // pos - target (opposé de seek)
+    desiredSpeed.setMag(this.maxSpeed);
+    let force = p5.Vector.sub(desiredSpeed, this.vel);
+    force.limit(this.maxForce);
+    return force;
   }
 
   // --------------------------------------------

@@ -1,5 +1,6 @@
 let target;
 let vehicles = [];
+let lightActive = false; // pour activer/désactiver la lumière au clic
 
 
 // Appelée avant de démarrer l'animation
@@ -9,57 +10,74 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight, WEBGL);
 
   // La cible, ce sera la position de la souris
-  target = createVector(random(width), random(height));
+  target = createVector(random(width - 200, width/2), random(height - 200, height/2));
 
-  // on cree des vehicules, autant que de points
-  creerVehicules(1);
+  // on cree n véhicules
+  creerVehicules(20);
 }
 
 function creerVehicules(n) {
   for (let i = 0; i < n; i++) {
-    let v = new Vehicle(random(width), random(height));
+    let v = new Vehicle(random(-width/2 + 50, width/2 - 50), random(-height/2 + 50, height/2 - 50));
     vehicles.push(v);
   }
 }
 
 // appelée 60 fois par seconde
 function draw() {
-  // couleur pour effacer l'écran
-  background(0);
-  // pour effet psychedelique
-  //background(0, 0, 0, 10);
+  // Nuit - fond très sombre
+  background(5, 5, 15);
+  
+  // Lumière ambiante très faible (nuit)
+  ambientLight(40, 40, 50);
+  
+  // Si L est pressé : lumière de scène (vient du dessus, éclaire tout)
+  if (lightActive) {
+    directionalLight(255, 255, 220, 0, -1, -1);
+  }
 
-
-  target.x = mouseX;
-  target.y = mouseY;
+  // Convertir les coordonnées de la souris pour WEBGL
+  target.x = mouseX - width / 2;
+  target.y = mouseY - height / 2;
 
   // dessin de la cible à la position de la souris
   push();
+  translate(target.x, target.y, 0);
   fill(255, 0, 0);
   noStroke();
-  ellipse(target.x, target.y, 32);
+  sphere(16);
   pop();
 
-  // si on a affaire au premier véhicule
-  // alors il suit la souris (target)
-  let steeringForce;
-  // le premier véhicule suit la souris avec arrivée
+  // 1) lignes entre les anneaux (dessinées avant les véhicules)
+  push();
+  strokeCap(ROUND);
   vehicles.forEach((vehicle, index) => {
-  
-    // le premier véhicule suit la souris avec arrivée
-    steeringForce = vehicle.arrive(target, 0);
-       vehicle.applyForce(steeringForce);
-       vehicle.update();
-      vehicle.show();
-    })
+    if (index === 0) return; // pas de ligne pour le premier
+    stroke(255, 255, 255, 120);
+    strokeWeight(vehicle.r * 2);
+    line(vehicles[index - 1].pos.x, vehicles[index - 1].pos.y, 0,
+         vehicle.pos.x, vehicle.pos.y, 0);
+  });
+  pop();
+
+  // 2) comportement + dessin des véhicules
+  vehicles.forEach((vehicle, index) => {
+    let cible = (index === 0) ? target : vehicles[index - 1].pos;
+    vehicle.applyForce(vehicle.arrive(cible, 50));
+    vehicle.update();
+    vehicle.show();
+  });
 
 }
 
 function keyPressed() {
   if (key === 'd') {
     Vehicle.debug = !Vehicle.debug;
-  } 
+  }
+  if (key === 'l' || key === 'L') {
+    lightActive = !lightActive;
+  }
 }

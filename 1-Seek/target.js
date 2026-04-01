@@ -7,7 +7,15 @@ class Target extends Vehicle {
     // Vitesse max aléatoire enter 1 et 6
     this.vel.setMag(random(1, 6));
 
-    setInterval(() => {
+    //cercle de detection pour fuir
+    this.rayonDetection = 80;
+
+    this.startDeplacementAleatoire
+  }
+
+
+  startDeplacementAleatoire() {
+        this.id = setInterval(() => {
       // Changer la direction de la vitesse aléatoirement toutes les 500 ms
       this.vel = p5.Vector.random2D();
       this.vel.setMag(random(1, 6));
@@ -21,15 +29,23 @@ class Target extends Vehicle {
     }, 1000);
   }
 
-  update() {
+  stopDeplacementsAleatoire () {
+    clearInterval(this.id);
+  }
+
+  /*update() {
     this.vel.setHeading(this.vel.heading() + random(-0.2, 0.2)); // changement aléatoire de direction
     super.update();
-
-  }
+  }*/
 
   show() {
     fill(this.color);
     noStroke();
     circle(this.pos.x, this.pos.y, this.r * 2);
+
+    //on dessine le rayon de detection
+    noFill();
+    stroke(this.color);
+    circle(this.pos.x, this.pos.y, this.rayonDetection * 2);
   }
 }
